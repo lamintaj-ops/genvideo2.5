@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Aquaverse Video Generator</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .step-indicator {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .examples {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .examples p {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .example-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .example-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-message {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-percent {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: right;
+        }
+
+        .process-log {
+            margin-top: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .process-log-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .log-entries {
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+            color: #555;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry.highlight {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .log-entry.progress-bar {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: #28a745;
+            font-weight: 600;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+
+        .prompt-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fff 100%);
+            border-radius: 12px;
+            border: 3px solid #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prompt-label {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prompt-text {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .download-box {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .download-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .video-preview {
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .video-preview-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .video-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .video-tab {
+            flex: 1;
+            padding: 8px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .video-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .video-container video {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .download-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .download-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .download-desc {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .download-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .download-link:hover {
+            background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-reset {
+            background: #6c757d;
+            margin-top: 15px;
+        }
+
+        .btn-reset:hover {
+            background: #5a6268;
+        }
+
+        .jobs-list {
+            margin-top: 10px;
+        }
+
+        .job-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+            transition: all 0.2s;
+        }
+
+        .job-item:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .job-status {
+            font-weight: bold;
+        }
+
+        .job-time {
+            color: #999;
+        }
+
+        .job-prompt {
+            color: #555;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status-completed { border-left-color: #28a745; }
+        .status-failed { border-left-color: #dc3545; }
+        .status-processing { border-left-color: #ffc107; }
+
+        .hidden { display: none; }
+
+        .prompt-generator {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .theme-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .theme-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .theme-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .theme-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .theme-subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .storyboard {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: none !important;
+        }
+
+        .storyboard.active {
+            display: none !important;
+        }
+
+        .storyboard-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .scene {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .scene-time {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .scene-desc {
+            color: #555;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .prompt-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fff 100%);
+            border-radius: 12px;
+            border: 3px solid #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prompt-label {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prompt-text {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .btn-copy {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-copy:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-use-prompt {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-use-prompt:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .card { padding: 20px; }
+            .download-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Aquaverse Video Generator</h1>
+            <p>Pick a theme → Generate → Download</p>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card">
+            <!-- Prompt Generator Section -->
+            <div class="prompt-generator">
+                <div class="section-title" style="color: #8b4513;">
+                    <span>📝</span>
+                    <span>Choose Your Theme</span>
+                </div>
+
+                <div class="theme-grid">
+                    <div class="theme-card" onclick="selectTheme('jumanji')">
+                        <div class="theme-icon">🏰</div>
+                        <div class="theme-title">Jumanji Adventure</div>
+                        <div class="theme-subtitle">High energy, exciting slides</div>
+                    </div>
+
+                    <div class="theme-card" onclick="selectTheme('family')">
+                        <div class="theme-icon">👨‍👩‍👧</div>
+                        <div class="theme-title">Family Day</div>
+                        <div class="theme-subtitle">Warm, wholesome moments</div>
+                    </div>
+
+                    <div class="theme-card" onclick="selectTheme('surf')">
+                        <div class="theme-icon">🏄</div>
+                        <div class="theme-title">Surf & Party</div>
+                        <div class="theme-subtitle">Cool, stylish, energetic</div>
+                    </div>
+
+                    <div class="theme-card" onclick="selectTheme('chill')">
+                        <div class="theme-icon">🍿</div>
+                        <div class="theme-title">Eat & Chill</div>
+                        <div class="theme-subtitle">Lifestyle, relaxing vibe</div>
+                    </div>
+
+                    <div class="theme-card" onclick="selectTheme('ghostbusters')">
+                        <div class="theme-icon">👻</div>
+                        <div class="theme-title">Ghostbusters Zone</div>
+                        <div class="theme-subtitle">Spooky, mysterious, fun</div>
+                    </div>
+
+                    <div class="theme-card" onclick="selectTheme('zombieland')">
+                        <div class="theme-icon">🧟</div>
+                        <div class="theme-title">Zombieland Zone</div>
+                        <div class="theme-subtitle">Horror, thrilling adventure</div>
+                    </div>
+                </div>
+
+                <!-- Ready-to-Use Prompts -->
+                <div id="prompt-box-jumanji" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-jumanji">Action video 15s in Jumanji zone, start with wide shot of slide tower, then fast sliding down, big water splash close-up, ending with excited face laughing and screaming, high energy upbeat vibe.</div>
+                    <button class="btn-copy" onclick="copyPrompt('jumanji')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('jumanji')">Use This →</button>
+                </div>
+
+                <div id="prompt-box-family" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-family">Family vlog 15s, Hotel Transylvania kids zone, parents holding hands with child, cute kid sliding on small slide, happy family playing in water together, warm sunlight, wholesome and cheerful.</div>
+                    <button class="btn-copy" onclick="copyPrompt('family')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('family')">Use This →</button>
+                </div>
+
+                <div id="prompt-box-surf" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-surf">Cool Flowrider surfing 15s, pro surfer doing tricks, cut to crowd cheering and drinking, slow motion water spray close-up, energetic party atmosphere, stylish edit.</div>
+                    <button class="btn-copy" onclick="copyPrompt('surf')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('surf')">Use This →</button>
+                </div>
+
+                <div id="prompt-box-chill" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-chill">Lifestyle vacation 15s, close-up delicious food and burgers, cheering colorful drinks by the pool, relaxing in lazy river, chill and yummy vibe, no action.</div>
+                    <button class="btn-copy" onclick="copyPrompt('chill')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('chill')">Use This →</button>
+                </div>
+
+                <div id="prompt-box-ghostbusters" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-ghostbusters">Ghostbusters zone adventure 15s, wide shot of spooky themed area with fog, kids exploring mysterious water features, sliding through ghost tubes with green lights, group having fun with Ghostbusters props, playful spooky vibe.</div>
+                    <button class="btn-copy" onclick="copyPrompt('ghostbusters')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('ghostbusters')">Use This →</button>
+                </div>
+
+                <div id="prompt-box-zombieland" class="prompt-box" style="display:none;">
+                    <div class="prompt-label">✅ Your Prompt</div>
+                    <div class="prompt-text" id="prompt-zombieland">Zombieland horror zone 15s, dark entrance with zombie decorations and suspense, thrilling fast slides with dramatic angles, intense water splash landing, survivors celebrating with adrenaline expressions, scary fun adventure.</div>
+                    <button class="btn-copy" onclick="copyPrompt('zombieland')">📋 Copy</button>
+                    <button class="btn-use-prompt" onclick="useGeneratedPrompt('zombieland')">Use This →</button>
+                </div>
+
+                <!-- Storyboards (Hidden) -->
+                <div id="storyboard-jumanji" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Jumanji Adventure</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-4 sec (Intro)</div>
+                        <div class="scene-desc">Wide shot of tall Jumanji slide tower against the sky</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">4-8 sec (Action)</div>
+                        <div class="scene-desc">Person sliding down fast with speed</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">8-12 sec (Splash)</div>
+                        <div class="scene-desc">Big water splash fills the screen</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">12-15 sec (Reaction)</div>
+                        <div class="scene-desc">Person emerges from water laughing and celebrating</div>
+                    </div>
+                </div>
+
+                <div id="storyboard-family" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Family Day</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-5 sec (Bonding)</div>
+                        <div class="scene-desc">Parents holding hands with child entering Hotel Transylvania kids zone</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">5-10 sec (Play)</div>
+                        <div class="scene-desc">Little kid sliding down small slide with big smile</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">10-15 sec (Moment)</div>
+                        <div class="scene-desc">Parents holding child in water, smiling at camera, warm sunlight</div>
+                    </div>
+                </div>
+
+                <div id="storyboard-surf" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Surf & Party</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-5 sec (Skill)</div>
+                        <div class="scene-desc">Pro surfer doing cool tricks on Flowrider, spinning moves</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">5-10 sec (Crowd)</div>
+                        <div class="scene-desc">Cut to people cheering and holding drinks</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">10-15 sec (Climax)</div>
+                        <div class="scene-desc">Slow motion water spray towards camera</div>
+                    </div>
+                </div>
+
+                <div id="storyboard-chill" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Eat & Chill</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-4 sec (Food)</div>
+                        <div class="scene-desc">Close-up of delicious pizza or burgers</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">4-9 sec (Drink)</div>
+                        <div class="scene-desc">Cheers with colorful fruit drinks by the pool</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">9-15 sec (Relax)</div>
+                        <div class="scene-desc">Floating in lazy river, super relaxed mood</div>
+                    </div>
+                </div>
+
+                <div id="storyboard-ghostbusters" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Ghostbusters Zone</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-4 sec (Entrance)</div>
+                        <div class="scene-desc">Wide shot of Ghostbusters themed area with spooky decorations</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">4-9 sec (Mystery)</div>
+                        <div class="scene-desc">Kids exploring mysterious water features and fog effects</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">9-12 sec (Action)</div>
+                        <div class="scene-desc">Sliding through ghost-themed tubes with green lighting</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">12-15 sec (Fun)</div>
+                        <div class="scene-desc">Group laughing and posing with Ghostbusters props</div>
+                    </div>
+                </div>
+
+                <div id="storyboard-zombieland" class="storyboard">
+                    <div class="storyboard-title">📋 Storyboard: Zombieland Zone</div>
+                    
+                    <div class="scene">
+                        <div class="scene-time">0-4 sec (Suspense)</div>
+                        <div class="scene-desc">Dark entrance with zombie theme decorations and eerie atmosphere</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">4-9 sec (Thrill)</div>
+                        <div class="scene-desc">Fast sliding down zombie-themed slides with dramatic angles</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">9-12 sec (Escape)</div>
+                        <div class="scene-desc">Water splash landing with horror sound effects vibe</div>
+                    </div>
+                    <div class="scene">
+                        <div class="scene-time">12-15 sec (Victory)</div>
+                        <div class="scene-desc">Survivors celebrating escape with adrenaline rush expressions</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+
+            <div class="section-title">
+                <span>✏️</span>
+                <span>Or Write Your Own</span>
+            </div>
+
+            <textarea id="promptInput" placeholder="Describe your video here... (e.g., Family fun waterpark, slides and pools, 15 seconds)"></textarea>
+
+            <div class="examples">
+                <p>💡 Click to use:</p>
+                <div class="example-item" onclick="useExample(this)">
+                    Family fun waterpark, slides and pools, happy vibes, 15 seconds
+                </div>
+                <div class="example-item" onclick="useExample(this)">
+                    Jumanji adventure zone, exciting water slides, energetic music, 20 seconds
+                </div>
+                <div class="example-item" onclick="useExample(this)">
+                    Summer splash paradise, kids playing water, family fun atmosphere, 15 seconds
+                </div>
+            </div>
+
+            <button id="generateBtn" class="btn" onclick="startGeneration()">
+                <span style="position: relative; z-index: 1;">🎬 Generate My Video</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 15px; color: #999; font-size: 0.85rem;">
+                ⚡ Takes 30-60 seconds to generate
+            </div>
+
+            <!-- Status Section -->
+            <div id="statusBox" class="status-box hidden">
+                <div class="status-indicator">
+                    <div id="spinner" class="spinner"></div>
+                    <span id="statusText" class="status-text">Creating your video...</span>
+                </div>
+                <div id="statusMessage" class="status-message"></div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressPercent" class="progress-percent">0%</div>
+            </div>
+
+            <!-- Download Section -->
+            <div id="downloadBox" class="download-box hidden">
+                <div class="download-title">🎉 Your Video is Ready!</div>
+                
+                <!-- Video Preview -->
+                <div class="video-preview">
+                    <div class="video-preview-title">Preview</div>
+                    <div class="video-tabs">
+                        <button class="video-tab active" onclick="switchVideoPreview('916')">📱 Vertical</button>
+                        <button class="video-tab" onclick="switchVideoPreview('169')">🖥️ Landscape</button>
+                    </div>
+                    <div class="video-container">
+                        <video id="videoPreview" class="video-player" controls>
+                            <source id="videoSource" src="" type="video/mp4">
+                            Your browser does not support video playback.
+                        </video>
+                    </div>
+                </div>
+
+                <div class="download-grid">
+                    <div class="download-item">
+                        <div class="download-label">📱 Vertical</div>
+                        <div class="download-desc">Stories / TikTok / Reels</div>
+                        <a id="download916" href="#" class="download-link">Download</a>
+                    </div>
+                    <div class="download-item">
+                        <div class="download-label">🖥️ Landscape</div>
+                        <div class="download-desc">YouTube / Facebook</div>
+                        <a id="download169" href="#" class="download-link">Download</a>
+                    </div>
+                </div>
+                <button class="btn btn-reset" onclick="resetForm()">Create Another Video</button>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="card">
+            <div class="section-title">
+                <span>📜</span>
+                <span>History</span>
+            </div>
+            <div id="jobsList" class="jobs-list">
+                <div style="text-align: center; color: #999; padding: 20px;">
+                    No history yet
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let statusInterval = null;
+        let selectedTheme = null;
+
+        function selectTheme(theme) {
+            // Remove active from all cards
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Hide all prompt boxes
+            document.querySelectorAll('.prompt-box').forEach(pb => {
+                pb.style.display = 'none';
+            });
+
+            // Activate selected theme
+            event.currentTarget.classList.add('active');
+            
+            // Show selected prompt box
+            const promptBox = document.getElementById(`prompt-box-${theme}`);
+            if (promptBox) {
+                promptBox.style.display = 'block';
+            }
+            
+            selectedTheme = theme;
+        }
+
+        function copyPrompt(theme) {
+            const promptText = document.getElementById(`prompt-${theme}`).textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = event.currentTarget;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 1500);
+            });
+        }
+
+        function useGeneratedPrompt(theme) {
+            const promptText = document.getElementById(`prompt-${theme}`).textContent;
+            document.getElementById('promptInput').value = promptText;
+            
+            // Scroll to prompt input
+            document.getElementById('promptInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the input
+            const input = document.getElementById('promptInput');
+            input.focus();
+            input.style.borderColor = '#28a745';
+            setTimeout(() => {
+                input.style.borderColor = '#667eea';
+            }, 1000);
+        }
+
+        function useExample(element) {
+            document.getElementById('promptInput').value = element.textContent.trim();
+        }
+
+        async function startGeneration() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            
+            if (!prompt) {
+                alert('⚠️ Please enter a prompt first');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span style="position: relative; z-index: 1;">⏳ Creating...</span>';
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Something went wrong');
+                }
+
+                currentJobId = data.job_id;
+                
+                // Show status box
+                document.getElementById('statusBox').classList.remove('hidden');
+                document.getElementById('downloadBox').classList.add('hidden');
+                
+                // Start checking status
+                checkStatus();
+                loadRecentJobs();
+
+            } catch (error) {
+                alert('❌ ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span style="position: relative; z-index: 1;">🎬 Generate My Video</span>';
+            }
+        }
+
+        async function checkStatus() {
+            if (!currentJobId) return;
+
+            try {
+                const response = await fetch(`/api/status/${currentJobId}`);
+                const data = await response.json();
+
+                // Debug: Log the response
+                console.log('Status API Response:', data);
+
+                document.getElementById('statusText').textContent = data.message;
+                document.getElementById('statusMessage').textContent = `Prompt: ${data.prompt}`;
+                
+                const progress = data.progress || 0;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressPercent').textContent = progress + '%';
+
+                if (data.status === 'completed') {
+                    // Hide spinner
+                    document.getElementById('spinner').classList.add('hidden');
+                    
+                    // Stop checking
+                    if (statusInterval) {
+                        clearInterval(statusInterval);
+                        statusInterval = null;
+                    }
+
+                    // Show download section
+                    document.getElementById('downloadBox').classList.remove('hidden');
+                    document.getElementById('download169').href = data.download_urls['169'];
+                    document.getElementById('download916').href = data.download_urls['916'];
+
+                    // Set video preview to 9:16 by default
+                    switchVideoPreview('916', data.download_urls);
+
+                    // Reset button
+                    const btn = document.getElementById('generateBtn');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span style="position: relative; z-index: 1;">🎬 Generate My Video</span>';
+
+                    loadRecentJobs();
+
+                } else if (data.status === 'failed') {
+                    if (statusInterval) {
+                        clearInterval(statusInterval);
+                        statusInterval = null;
+                    }
+                    document.getElementById('spinner').classList.add('hidden');
+                    alert('❌ ' + data.message);
+                    
+                    const btn = document.getElementById('generateBtn');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span style="position: relative; z-index: 1;">🎬 Generate My Video</span>';
+                    
+                } else {
+                    // Continue checking
+                    if (!statusInterval) {
+                        statusInterval = setInterval(checkStatus, 2000);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error checking status:', error);
+            }
+        }
+
+        async function loadRecentJobs() {
+            try {
+                const response = await fetch('/api/jobs');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const jobs = await response.json();
+
+                const jobsList = document.getElementById('jobsList');
+                
+                if (jobs.length === 0) {
+                    jobsList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">No history yet</div>';
+                    return;
+                }
+
+                jobsList.innerHTML = jobs.map(job => `
+                    <div class="job-item status-${job.status}">
+                        <div class="job-header">
+                            <span class="job-status">${getStatusIcon(job.status)} ${getStatusText(job.status)}</span>
+                            <span class="job-time">${formatTime(job.created_at)}</span>
+                        </div>
+                        <div class="job-prompt">${job.prompt}</div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+            }
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'queued': '⏳',
+                'processing': '⚙️',
+                'completed': '✅',
+                'failed': '❌'
+            };
+            return icons[status] || '❓';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'queued': 'Queued',
+                'processing': 'Processing',
+                'completed': 'Completed',
+                'failed': 'Failed'
+            };
+            return texts[status] || status;
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+            return date.toLocaleDateString('en-US');
+        }
+
+        function resetForm() {
+            document.getElementById('promptInput').value = '';
+            document.getElementById('statusBox').classList.add('hidden');
+            document.getElementById('downloadBox').classList.add('hidden');
+            document.getElementById('spinner').classList.remove('hidden');
+            currentJobId = null;
+            
+            if (statusInterval) {
+                clearInterval(statusInterval);
+                statusInterval = null;
+            }
+        }
+
+        let currentVideoUrls = {};
+
+        function switchVideoPreview(format, urls) {
+            // If urls are provided, update the stored URLs
+            if (urls) {
+                currentVideoUrls = urls;
+            }
+            
+            // Update tab active states
+            document.querySelectorAll('.video-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event?.currentTarget?.classList.add('active');
+            
+            // If no currentTarget (first load), activate the correct tab manually
+            if (!event?.currentTarget) {
+                document.querySelectorAll('.video-tab')[format === '916' ? 0 : 1].classList.add('active');
+            }
+            
+            // Update video source
+            const videoElement = document.getElementById('videoPreview');
+            const videoSource = document.getElementById('videoSource');
+            
+            if (currentVideoUrls[format]) {
+                videoSource.src = currentVideoUrls[format];
+                videoElement.load();
+            }
+        }
+
+        // Load recent jobs on page load
+        loadRecentJobs();
+        setInterval(loadRecentJobs, 15000); // Refresh every 15 seconds
+    </script>
+</body>
+</html>
