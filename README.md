@@ -78,7 +78,7 @@ genvideo2.5/
 
 ## 🔧 Troubleshooting
 
-**Common Issues:**
+**Common Issues & Solutions:**
 
 1. **FFmpeg not found:**
    - Make sure FFmpeg is installed and in PATH
@@ -95,8 +95,40 @@ genvideo2.5/
    - Or stop other processes using port 5000
 
 4. **numpy installation failed:**
-   - Use: `pip install --upgrade pip setuptools wheel`
-   - Then: `pip install pandas` (includes numpy)
+   - Issue: `metadata generation failed` error during pandas installation
+   - Solution:
+   ```bash
+   pip install --upgrade pip setuptools wheel
+   pip install numpy==1.24.3  # Specific stable version
+   pip install pandas  # Will now use pre-installed numpy
+   ```
+
+5. **Flask module not found (after virtual env setup):**
+   - Ensure virtual environment is activated
+   - Reinstall Flask: `pip install flask`
+
+6. **Video generation hanging on localhost (vs working in command line):**
+   - This has been fixed in the current web_app.py version
+   - Simplified progress tracking eliminates stdout/stderr capture issues
+   - If still experiencing issues, try manually running generate_edit.py first to ensure all dependencies work
+
+7. **CSV file not found:**
+   - Ensure `canto_clip_tags_with_urls.csv` exists in root directory
+   - File contains sample data - replace URLs with working video links for production use
+
+## 🧪 Testing Installation
+
+**Verify everything works:**
+1. Test generate_edit.py directly: `python generate_edit.py`
+2. If command line works, start web app: `python web_app.py`
+3. Test single video generation through web interface
+
+**Known Working Configuration:**
+- Python 3.14.2
+- Flask 3.1.2
+- pandas 2.2.3
+- numpy 1.24.3
+- Windows 11 (also works on macOS/Linux)
 
 5. **Video generation errors:**
    - Check internet connection
